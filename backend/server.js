@@ -11,12 +11,15 @@ const app = express();
 app.use(express.json());
 
 // ✅ Flexible CORS setup for localhost + production
+const allowedOrigins = [
+  "http://localhost:5173", // Vite default
+  "http://localhost:3000", // React default
+  "https://your-production-frontend.com", // Replace with your real frontend
+];
 const corsOptions = {
   origin: function (origin, callback) {
-    if (!origin || origin.startsWith("http://localhost")) {
+    if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
-    } else if (origin === "https://your-production-frontend.com") {
-      callback(null, true); // replace with real frontend domain
     } else {
       callback(new Error("❌ Not allowed by CORS"));
     }
@@ -25,44 +28,55 @@ const corsOptions = {
 };
 app.use(cors(corsOptions));
 
-// ✅ Static files for file uploads
+// ✅ Static files for uploads
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// ✅ Health check route
+// ✅ Health check
 app.get("/", (req, res) => {
   res.send("✅ SLSBA API is running");
 });
 
-// ✅ Route Imports from Feature Folders
-app.use("/api/tournaments", require("./tournament/routes/tournamentRoutes"));
-app.use("/api/tournament-registrations", require("./tournament/routes/tournamentRegistrationRoutes"));
-app.use("/api/admin", require("./tournament/routes/adminRoutes"));
-app.use("/api/payments", require("./tournament/routes/payments"));
+// ✅ Core Routes (tournament module)
+app.use("/api/tournaments", require("./routes/tournamentRoutes"));
+app.use("/api/tournament-registrations", require("./routes/tournamentRegistrationRoutes"));
+app.use("/api/admin", require("./routes/adminRoutes"));
+app.use("/api/payments", require("./routes/payments"));
 
-// ✅ Finance Feature (to be added by teammate)
+// ✅ Optional Feature Routes (Safe try/catch)
 try {
-  app.use("/api/finance", require("./finance/routes")); // fallback if team adds later
+  app.use("/api/finance", require("./routes/financeRoutes")); // e.g., ./routes/financeRoutes.js
 } catch (err) {
-  console.warn("⚠️ Finance routes not found (yet)");
+  console.warn("⚠️ Finance routes not found.");
 }
 
-// ✅ News Feature (future-proof)
 try {
-  app.use("/api/news", require("./news/routes"));
+  app.use("/api/news", require("./routes/newsRoutes"));
 } catch (err) {
-  console.warn("⚠️ News routes not found (yet)");
+  console.warn("⚠️ News routes not found.");
 }
 
-// ✅ Start the server only after DB connects
+try {
+  app.use("/api/training", require("./routes/trainingRoutes"));
+} catch (err) {
+  console.warn("⚠️ Training routes not found.");
+}
+
+try {
+  app.use("/api/support", require("./routes/supportRoutes"));
+} catch (err) {
+  console.warn("⚠️ Customer Support routes not found.");
+}
+
+// ✅ Start the server after DB connection
 const startServer = async () => {
   try {
-    await connectDB(); // MongoDB connection
+    await connectDB();
     const PORT = process.env.PORT || 5001;
     app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
+      console.log(`🚀 Server running on http://localhost:${PORT}`);
     });
   } catch (err) {
-    console.error("❌ Server start failed:", err);
+    console.error("❌ Failed to connect to MongoDB:", err);
     process.exit(1);
   }
 };

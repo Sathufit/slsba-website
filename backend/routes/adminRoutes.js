@@ -3,7 +3,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const Admin = require("../models/Admin");
 const Tournament = require("../models/Tournament"); // Import Tournament Model
-const authMiddleware = require("../../middleware/authMiddleware")
+const authMiddleware = require("../middleware/authMiddleware")
 
 
 const router = express.Router();
