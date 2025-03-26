@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Calendar, MapPin, Filter, Search, ChevronRight, ChevronDown, Users } from "lucide-react";
+import {
+  Calendar,
+  MapPin,
+  Filter,
+  Search,
+  ChevronRight,
+  ChevronDown,
+  Users,
+} from "lucide-react";
 import "../styles/global.css";
 import "../styles/TournamentPage.css";
 import { Link } from "react-router-dom";
@@ -12,138 +20,46 @@ const Tournaments = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [visible, setVisible] = useState(false);
   const [expandedTournament, setExpandedTournament] = useState(null);
+  const [tournaments, setTournaments] = useState([]);
 
   // Animation trigger on page load
   useEffect(() => {
     setVisible(true);
-  }, []);
-
-  // Tournament data
-  const tournaments = [
-    {
-      id: 1,
-      category: "Under 17",
-      title: "National School Championship",
-      date: "March 15-20, 2025",
-      registrationDeadline: "February 28, 2025",
-      venue: "Sugathadasa Stadium, Colombo",
-      participants: 128,
-      description: "The premier national championship for under 17 school badminton players across Sri Lanka. This tournament features singles and doubles categories for both boys and girls.",
-      status: "Registration Open",
-      coordinator: "Mr. Ajith Perera",
-      contact: "+94 77 1234567",
-      prizes: "Gold, Silver, and Bronze medals with certificates. Champion school will receive the prestigious SLSBA trophy."
-    },
-    {
-      id: 2,
-      category: "Under 15",
-      title: "Provincial Tournament - Western Province",
-      date: "April 5-8, 2025",
-      registrationDeadline: "March 20, 2025",
-      venue: "Royal College Sports Complex, Colombo",
-      participants: 96,
-      description: "Western Province qualifier tournament for the National Junior Championship. Top 3 players will qualify for the National tournament.",
-      status: "Registration Open",
-      coordinator: "Ms. Lakshmi Fernando",
-      contact: "+94 71 9876543",
-      prizes: "Gold, Silver, and Bronze medals with certificates. Qualified players will receive special training."
-    },
-    {
-      id: 3,
-      category: "Under 19",
-      title: "All Island School Games",
-      date: "May 1-6, 2025",
-      registrationDeadline: "April 15, 2025",
-      venue: "Kandy Sports Complex, Kandy",
-      participants: 156,
-      description: "The flagship tournament for school badminton players featuring participants from all provinces. This tournament is a key selection event for national junior squads.",
-      status: "Coming Soon",
-      coordinator: "Mr. Nimal Jayasinghe",
-      contact: "+94 76 5463728",
-      prizes: "Gold, Silver, and Bronze medals with certificates. Winners will be considered for national junior squad selection."
-    },
-    {
-      id: 4,
-      category: "Under 13",
-      title: "Junior Development Series - Round 1",
-      date: "March 25-27, 2025",
-      registrationDeadline: "March 10, 2025",
-      venue: "Galle National Stadium, Galle",
-      participants: 64,
-      description: "First tournament in the junior development series aimed at identifying promising young talent. Focused on player development with coaching clinics included.",
-      status: "Registration Open",
-      coordinator: "Mrs. Chandrika Ratnayake",
-      contact: "+94 75 3456789",
-      prizes: "Medals and development training opportunities for top performers."
-    },
-    {
-      id: 5,
-      category: "Open",
-      title: "Inter-School Championship",
-      date: "June 10-15, 2025",
-      registrationDeadline: "May 25, 2025",
-      venue: "Jaffna Central College Courts, Jaffna",
-      participants: 200,
-      description: "The prestigious inter-school championship where schools compete for team honors across all age categories. A true test of each school's badminton program strength.",
-      status: "Coming Soon",
-      coordinator: "Mr. Ranjith Cooray",
-      contact: "+94 70 8765432",
-      prizes: "Champion School Trophy, Runner-up Shield, and individual medals for team members."
-    },
-    {
-      id: 6,
-      category: "Under 17",
-      title: "Central Province Championship",
-      date: "April 15-18, 2025",
-      registrationDeadline: "March 30, 2025",
-      venue: "Trinity College Sports Complex, Kandy",
-      participants: 88,
-      description: "Central Province qualifier tournament featuring schools from Kandy, Matale, and Nuwara Eliya districts. Top performers will qualify for national events.",
-      status: "Registration Open",
-      coordinator: "Ms. Deepika Seneviratne",
-      contact: "+94 77 6543210",
-      prizes: "Medals, certificates, and qualification spots for national tournaments."
-    }
-  ];
-  
-
-  // Filter tournaments based on selections and search query
-  const filteredTournaments = tournaments.filter(tournament => {
-    const matchesCategory = category === "All Categories" || tournament.category === category;
-    const matchesRegion = region === "All Regions" || tournament.venue.includes(region);
-    const matchesSearch = searchQuery === "" || 
-      tournament.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      tournament.venue.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    return matchesCategory && matchesRegion && matchesSearch;
-  });
-
-  // Toggle tournament details
-  const toggleTournamentDetails = (id) => {
-    if (expandedTournament === id) {
-      setExpandedTournament(null);
-    } else {
-      setExpandedTournament(id);
-    }
-  };
-
-  // Animation classes
-  const fadeInClass = visible ? "opacity-100" : "opacity-0";
-  const transitionClass = "transition-all duration-700 ease-out";
-  useEffect(() => {
     fetchTournaments();
   }, []);
-  
+
+  // Fetch tournaments from backend
   const fetchTournaments = async () => {
     try {
       const res = await axios.get("http://localhost:5001/api/tournaments/all");
-      console.log("📌 User Page Tournaments:", res.data); // Debugging log
+      console.log("📌 User Page Tournaments:", res.data);
       setTournaments(res.data);
     } catch (error) {
       console.error("❌ Error fetching tournaments:", error);
     }
   };
-  
+
+  // Filter tournaments based on selections and search query
+  const filteredTournaments = tournaments.filter((tournament) => {
+    const matchesCategory =
+      category === "All Categories" || tournament.category === category;
+    const matchesRegion =
+      region === "All Regions" || tournament.venue?.includes(region);
+    const matchesSearch =
+      searchQuery === "" ||
+      tournament.tournamentName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      tournament.venue?.toLowerCase().includes(searchQuery.toLowerCase());
+
+    return matchesCategory && matchesRegion && matchesSearch;
+  });
+
+  // Toggle tournament details
+  const toggleTournamentDetails = (id) => {
+    setExpandedTournament(expandedTournament === id ? null : id);
+  };
+
+  const fadeInClass = visible ? "opacity-100" : "opacity-0";
+  const transitionClass = "transition-all duration-700 ease-out";
 
   return (
     <div className={`tournaments-container ${fadeInClass} ${transitionClass}`}>
@@ -230,95 +146,116 @@ const Tournaments = () => {
         </div>
       </section>
 
-      {/* Tournaments List */}
-      <section className="tournaments-list-section">
-        <h2>Upcoming Tournaments <span className="count">({filteredTournaments.length})</span></h2>
-        
-        <div className="tournaments-list">
-          {filteredTournaments.length > 0 ? (
-            filteredTournaments.map((tournament, index) => (
-              <div 
-                key={tournament.id} 
-                className={`tournament-item ${expandedTournament === tournament.id ? 'expanded' : ''}`}
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <div className="tournament-main" onClick={() => toggleTournamentDetails(tournament.id)}>
-                  <div className="tournament-header">
-                    <span className="category-badge">{tournament.category}</span>
-                    <span className={`status-badge ${tournament.status === "Registration Open" ? "open" : "coming"}`}>
-                      {tournament.status}
-                    </span>
-                  </div>
-                  <h3>{tournament.title}</h3>
-                  <div className="tournament-basic-info">
-                    <div className="info-item">
-                      <Calendar size={16} />
-                      <span>{tournament.date}</span>
-                    </div>
-                    <div className="info-item">
-                      <MapPin size={16} />
-                      <span>{tournament.venue}</span>
-                    </div>
-                    <div className="info-item">
-                      <Users size={16} />
-                      <span>{tournament.participants} participants</span>
-                    </div>
-                  </div>
-                  <div className="expand-indicator">
-                    <ChevronDown size={20} className={expandedTournament === tournament.id ? 'rotate' : ''} />
-                  </div>
-                </div>
-                
-                {expandedTournament === tournament.id && (
-                  <div className="tournament-details">
-                    <div className="details-grid">
-                      <div className="detail-item">
-                        <h4>Description</h4>
-                        <p>{tournament.description}</p>
-                      </div>
-                      <div className="detail-item">
-                        <h4>Registration Deadline</h4>
-                        <p>{tournament.registrationDeadline}</p>
-                      </div>
-                      <div className="detail-item">
-                        <h4>Tournament Coordinator</h4>
-                        <p>{tournament.coordinator}</p>
-                      </div>
-                      <div className="detail-item">
-                        <h4>Contact</h4>
-                        <p>{tournament.contact}</p>
-                      </div>
-                      <div className="detail-item">
-                        <h4>Prizes</h4>
-                        <p>{tournament.prizes}</p>
-                      </div>
-                    </div>
-                    <div className="details-actions">
-                      {tournament.status === "Registration Open" ? (
-                        <Link to={`/tournamentReg/${tournament.id}`} className="register-btn">
-                        Register Now <ChevronRight size={16} className="inline ml-1" />
-                      </Link>
-                      ) : (
-                        <button className="notify-btn">
-                          Notify Me <ChevronRight size={16} className="inline ml-1" />
-                        </button>
-                      )}
-                      <button className="details-btn">
-                        Full Details <ChevronRight size={16} className="inline ml-1" />
-                      </button>
-                    </div>
-                  </div>
-                )}
+      {/* 🏸 Tournaments List */}
+<section className="tournaments-list-section">
+  <h2>
+    Upcoming Tournaments{" "}
+    <span className="count">({filteredTournaments.length})</span>
+  </h2>
+
+  <div className="tournaments-list">
+    {filteredTournaments.length > 0 ? (
+      filteredTournaments.map((tournament, index) => (
+        <div
+          key={tournament._id}
+          className={`tournament-item ${
+            expandedTournament === tournament._id ? "expanded" : ""
+          }`}
+          style={{ animationDelay: `${index * 0.1}s` }}
+        >
+          {/* ➤ Tournament Header */}
+          <div
+            className="tournament-main"
+            onClick={() => toggleTournamentDetails(tournament._id)}
+          >
+            <div className="tournament-header">
+              <span className="category-badge">{tournament.category}</span>
+              <span className={`status-badge ${tournament.status?.toLowerCase().replace(" ", "-")}`}>
+                {tournament.status}
+              </span>
+            </div>
+            <h3>{tournament.tournamentName}</h3>
+            <div className="tournament-basic-info">
+              <div className="info-item">
+                <Calendar size={16} />
+                <span>{new Date(tournament.date).toLocaleDateString()}</span>
               </div>
-            ))
-          ) : (
-            <div className="no-results">
-              <h3>No tournaments found</h3>
-              <p>Try adjusting your filters or search criteria</p>
+              <div className="info-item">
+                <MapPin size={16} />
+                <span>{tournament.venue}</span>
+              </div>
+              <div className="info-item">
+                <Users size={16} />
+                <span>{tournament.maxParticipants} participants</span>
+              </div>
+            </div>
+            <div className="expand-indicator">
+              <ChevronDown
+                size={20}
+                className={expandedTournament === tournament._id ? "rotate" : ""}
+              />
+            </div>
+          </div>
+
+          {/* ➤ Tournament Details (Expanded) */}
+          {expandedTournament === tournament._id && (
+            <div className="tournament-details">
+              <div className="details-grid">
+                <div className="detail-item">
+                  <h4>Description</h4>
+                  <p>
+                    {tournament.description ||
+                      "No detailed description provided for this tournament."}
+                  </p>
+                </div>
+                <div className="detail-item">
+                  <h4>Registration Deadline</h4>
+                  <p>
+                    {tournament.registrationDeadline
+                      ? new Date(tournament.registrationDeadline).toLocaleDateString()
+                      : "—"}
+                  </p>
+                </div>
+                <div className="detail-item">
+                  <h4>Coordinator</h4>
+                  <p>{tournament.coordinator || "—"}</p>
+                </div>
+                <div className="detail-item">
+                  <h4>Contact</h4>
+                  <p>{tournament.contact || "—"}</p>
+                </div>
+                <div className="detail-item">
+                  <h4>Prizes</h4>
+                  <p>{tournament.prizes || "—"}</p>
+                </div>
+              </div>
+
+              {/* ➤ Actions */}
+              <div className="details-actions">
+                <Link
+                  to={`/tournamentReg/${tournament._id}`}
+                  className="register-btn"
+                >
+                  Register Now{" "}
+                  <ChevronRight size={16} className="inline ml-1" />
+                </Link>
+                <button className="details-btn">
+                  Full Details <ChevronRight size={16} className="inline ml-1" />
+                </button>
+              </div>
             </div>
           )}
         </div>
-      </section>
+      ))
+    ) : (
+      <div className="no-results">
+        <h3>No tournaments found</h3>
+        <p>Try adjusting your filters or search criteria</p>
+      </div>
+    )}
+  </div>
+</section>
+
 
       {/* Calendar Section */}
       <section className="tournament-calendar-section">

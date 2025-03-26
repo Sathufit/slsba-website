@@ -321,28 +321,43 @@ body {
 }
 
 /* Tables */
-/* Enhanced Tables with better colors and UI */
-.tournaments-table-wrapper, .tournaments-list-wrapper {
+/* Table Scroll Wrapper */
+.tournaments-table-wrapper-scroll {
+  overflow-x: auto;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+/* Table Container */
+.tournaments-list-wrapper {
+  min-width: 1400px; /* Wide enough to show all columns */
   background-color: var(--bg);
   border-radius: var(--radius);
   box-shadow: 0 5px 15px var(--shadow);
-  overflow: hidden;
-  margin-bottom: 30px;
   border: 1px solid var(--border);
 }
 
+/* Table Style */
 .tournaments-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  min-width: 1200px; /* Ensure horizontal scroll on smaller screens */
 }
 
-.tournaments-table th, .tournaments-table td {
+/* Table Headers and Cells */
+.tournaments-table th,
+.tournaments-table td {
   padding: 18px 16px;
   text-align: left;
   border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 200px;
 }
 
+/* Sticky Header */
 .tournaments-table th {
   background-color: var(--primary);
   color: white;
@@ -355,10 +370,12 @@ body {
   letter-spacing: 0.5px;
 }
 
+/* Last row border fix */
 .tournaments-table tr:last-child td {
   border-bottom: none;
 }
 
+/* Row Hover */
 .tournaments-table tbody tr {
   transition: all 0.3s ease;
 }
@@ -373,12 +390,14 @@ body {
   box-shadow: 0 3px 10px var(--shadow);
 }
 
+/* Button Group in Actions Column */
 .action-buttons-cell {
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
 }
 
+/* Action Buttons */
 .table-action-btn {
   padding: 8px 16px;
   border-radius: 30px;
@@ -393,19 +412,10 @@ body {
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.08);
 }
 
+/* Edit Button */
 .edit-btn {
   background-color: rgba(79, 70, 229, 0.1);
   color: var(--primary);
-}
-
-.delete-btn {
-  background-color: rgba(239, 68, 68, 0.1);
-  color: var(--danger);
-}
-
-.view-btn {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: var(--success);
 }
 
 .edit-btn:hover {
@@ -415,11 +425,23 @@ body {
   box-shadow: 0 4px 8px rgba(79, 70, 229, 0.25);
 }
 
+/* Delete Button */
+.delete-btn {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
 .delete-btn:hover {
   background-color: var(--danger);
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(239, 68, 68, 0.25);
+}
+
+/* View Button */
+.view-btn {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--success);
 }
 
 .view-btn:hover {
@@ -428,6 +450,15 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(16, 185, 129, 0.25);
 }
+
+/* Truncated Description Cell */
+.description-cell {
+  max-width: 250px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 
 /* Status badges */
 .status-badge {
@@ -1031,4 +1062,11 @@ body {
   .table-action-btn span {
     display: none;
   }
+  .description-cell {
+    max-width: 250px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  
 }

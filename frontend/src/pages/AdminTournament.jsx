@@ -211,43 +211,43 @@ const AdminTournaments = () => {
   };
 
   const handleEditTournamentClick = (tournament) => {
-    setEditingTournament(tournament);
-    setEditedData({
-      tournamentName: tournament.tournamentName,
-      category: tournament.category,
-      date: tournament.date,
-      venue: tournament.venue,
-      maxParticipants: tournament.maxParticipants,
-    });
+    console.log("🧩 Tournament object passed to edit:", tournament);
+    
+    if (!tournament || !tournament._id) {
+      alert("Tournament ID is missing. Cannot edit.");
+      return;
+    }
+  
+    setEditedData(tournament);
+    setEditingTournament(tournament._id);
   };
   
+     
 
 // 🎯 **Save Tournament Edits**
 const handleSaveTournamentEdit = async () => {
-  if (!editingTournament || !editingTournament._id) {
-    alert("Error: No tournament selected for editing");
+  if (!editingTournament) {
+    console.error("No tournament selected for editing.");
+    alert("No tournament selected for editing.");
     return;
-  }
+  }  
 
   try {
-    const response = await axios.put(
-      `http://localhost:5001/api/tournaments/update/${editingTournament._id}`, 
+    const res = await axios.put(
+      `http://localhost:5001/api/tournaments/update/${editingTournament}`,
       editedData
     );
-
-    if (response.status === 200) {
+    if (res.status === 200) {
       showToast("✅ Tournament updated successfully!");
       setEditingTournament(null);
-      fetchTournaments();
-    } else {
-      console.error("Unexpected response:", response);
-      alert("Failed to update tournament. Try again.");
+      fetchTournamentList(); // Refresh list
     }
-  } catch (error) {
-    console.error("Edit Error:", error.response?.data || error.message);
-    alert("❌ Error updating tournament");
+  } catch (err) {
+    console.error("Edit Error:", err);
+    alert("Error updating tournament.");
   }
 };
+
 
 
   // Delete tournament registration
@@ -351,14 +351,21 @@ const handleSaveTournamentEdit = async () => {
       if (response.status === 201 || response.status === 200) {
         showToast("Tournament created successfully!");
         setShowCreateModal(false);
-        setNewTournament({
+        const [newTournament, setNewTournament] = useState({
           tournamentName: "",
           category: "Under 17",
           date: "",
+          registrationDeadline: "",
           venue: "",
           maxParticipants: 16,
+          status: "Registration Open",
+          coordinator: "",
+          contact: "",
+          prizes: "",
+          description: "",
           paymentMethod: "Bank Transfer",
-        });
+        });        
+          
         fetchTournamentList();
       } else {
         console.error("Unexpected response:", response);
@@ -368,7 +375,18 @@ const handleSaveTournamentEdit = async () => {
       console.error("Error creating tournament:", error.response?.data || error.message);
       alert("Error creating tournament");
     }
+    if (
+      !newTournament.tournamentName || 
+      !newTournament.date || 
+      !newTournament.venue || 
+      !newTournament.registrationDeadline
+    ) {
+      alert("Please fill in all required fields.");
+      return;
+    }
+    
   };
+  
 
   const handleDelete = async (id) => {
     if (!id) {
@@ -683,70 +701,94 @@ const addNewPlayerField = () => {
             <>
               {/* Tournament List View */}
               {activeView === 'tournaments' && (
-                <div className="tournaments-list-wrapper">
-                  <table className="tournaments-table">
-                    <thead>
-                      <tr>
-                        <th>Tournament Name</th>
-                        <th>Category</th>
-                        <th>Date</th>
-                        <th>Venue</th>
-                        <th>Participants</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {filteredTournamentList.length === 0 ? (
-                        <tr>
-                          <td colSpan="6" className="no-data">
-                            No tournaments found
-                          </td>
-                        </tr>
-                      ) : (
-                        filteredTournamentList.map((tournament, index) => (
-                          <motion.tr
-                            key={tournament._id || index}
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            transition={{ delay: index * 0.05 }}
-                          >
-                            <td>{tournament.tournamentName}</td>
-                            <td>{tournament.category}</td>
-                            <td>{new Date(tournament.date).toLocaleDateString()}</td>
-                            <td>{tournament.venue}</td>
-                            <td>{tournament.currentParticipants ?? 0}</td>
-                            <td>
-                              <div className="action-buttons-cell">
-                                <motion.button 
-                                  className="table-action-btn"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => setShowBracket(tournament._id)}
-                                >
-                                  View Bracket
-                                </motion.button>
-                                <div className="action-buttons-cell">
-                                 <motion.button className="table-action-btn edit-btn" whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }} onClick={() => handleEditTournamentClick(tournament)}>
-                                <Edit size={14} /> Edit
-                              </motion.button>
-                            </div>
-                                <motion.button 
-                                  className="table-action-btn delete-btn"
-                                  whileHover={{ scale: 1.05 }}
-                                  whileTap={{ scale: 0.95 }}
-                                  onClick={() => handleDeleteTournament(tournament._id)}
-                                >
-                                  <Trash2 size={14} /> Delete
-                                </motion.button>
-                              </div>
-                            </td>
-                          </motion.tr>
-                        ))
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-              )}
+  <div className="tournaments-table-wrapper-scroll">
+    <div className="tournaments-list-wrapper">
+      <table className="tournaments-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Category</th>
+            <th>Date</th>
+            <th>Registration Deadline</th>
+            <th>Venue</th>
+            <th>Max Participants</th>
+            <th>Status</th>
+            <th>Coordinator</th>
+            <th>Contact</th>
+            <th>Prizes</th>
+            <th>Description</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {filteredTournamentList.length === 0 ? (
+            <tr>
+              <td colSpan="12" className="no-data">
+                No tournaments found
+              </td>
+            </tr>
+          ) : (
+            filteredTournamentList.map((tournament, index) => (
+              <motion.tr
+                key={tournament._id || index}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: index * 0.05 }}
+              >
+                <td>{tournament.tournamentName}</td>
+                <td>{tournament.category}</td>
+                <td>{new Date(tournament.date).toLocaleDateString()}</td>
+                <td>{new Date(tournament.registrationDeadline).toLocaleDateString()}</td>
+                <td>{tournament.venue}</td>
+                <td>{tournament.maxParticipants}</td>
+                <td>{tournament.status}</td>
+                <td>{tournament.coordinator}</td>
+                <td>{tournament.contact}</td>
+                <td>{tournament.prizes}</td>
+                <td className="description-cell">
+                  {tournament.description?.length > 100
+                    ? tournament.description.slice(0, 100) + "..."
+                    : tournament.description}
+                </td>
+                <td>
+                  <div className="action-buttons-cell">
+                    <motion.button
+                      className="table-action-btn view-btn"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => setShowBracket(tournament._id)}
+                    >
+                      View Bracket
+                    </motion.button>
+
+                    <motion.button
+                      className="table-action-btn edit-btn"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleEditTournamentClick(tournament)}
+                    >
+                      <Edit size={14} /> Edit
+                    </motion.button>
+
+                    <motion.button
+                      className="table-action-btn delete-btn"
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.95 }}
+                      onClick={() => handleDeleteTournament(tournament._id)}
+                    >
+                      <Trash2 size={14} /> Delete
+                    </motion.button>
+                  </div>
+                </td>
+              </motion.tr>
+            ))
+          )}
+        </tbody>
+      </table>
+    </div>
+  </div>
+)}
+
               
               {/* Tournament Registrations View */}
 {activeView === 'registrations' && (
@@ -897,26 +939,50 @@ const addNewPlayerField = () => {
         </motion.div>
       </div>
 
-      {/* Tournament Editing Modal */}
       {/* 🎯 Tournament Editing Modal */}
-<AnimatePresence>
+      <AnimatePresence>
   {editingTournament && (
-    <motion.div className="modal-backdrop" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <motion.div className="edit-modal" initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} transition={{ type: "spring", stiffness: 300, damping: 30 }} onClick={(e) => e.stopPropagation()}>
+    <motion.div
+      className="modal-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="edit-modal"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="modal-header">
           <h2>Edit Tournament</h2>
           <button className="close-btn" onClick={() => setEditingTournament(null)}>
             <X size={20} />
           </button>
         </div>
+
         <div className="modal-body">
           <div className="form-group">
             <label>Tournament Name</label>
-            <input type="text" value={editedData.tournamentName || ''} onChange={(e) => setEditedData({ ...editedData, tournamentName: e.target.value })} />
+            <input
+              type="text"
+              value={editedData.tournamentName || ""}
+              onChange={(e) =>
+                setEditedData({ ...editedData, tournamentName: e.target.value })
+              }
+            />
           </div>
+
           <div className="form-group">
             <label>Category</label>
-            <select value={editedData.category || 'Under 17'} onChange={(e) => setEditedData({ ...editedData, category: e.target.value })}>
+            <select
+              value={editedData.category || "Under 17"}
+              onChange={(e) =>
+                setEditedData({ ...editedData, category: e.target.value })
+              }
+            >
               <option value="Under 13">Under 13</option>
               <option value="Under 15">Under 15</option>
               <option value="Under 17">Under 17</option>
@@ -924,29 +990,128 @@ const addNewPlayerField = () => {
               <option value="Open">Open</option>
             </select>
           </div>
+
           <div className="form-group">
-            <label>Date</label>
-            <input type="date" value={editedData.date || ''} onChange={(e) => setEditedData({ ...editedData, date: e.target.value })} />
-          </div>
+  <label>Date</label>
+  <input
+    type="date"
+    value={
+      editedData.date
+        ? new Date(editedData.date).toISOString().split("T")[0]
+        : ""
+    }
+    onChange={(e) =>
+      setEditedData({ ...editedData, date: e.target.value })
+    }
+  />
+</div>
+
+
+<div className="form-group">
+  <label>Registration Deadline</label>
+  <input
+    type="date"
+    value={
+      editedData.registrationDeadline
+        ? new Date(editedData.registrationDeadline).toISOString().split("T")[0]
+        : ""
+    }
+    onChange={(e) =>
+      setEditedData({ ...editedData, registrationDeadline: e.target.value })
+    }
+  />
+</div>
+
+
           <div className="form-group">
             <label>Venue</label>
-            <input type="text" value={editedData.venue || ''} onChange={(e) => setEditedData({ ...editedData, venue: e.target.value })} />
+            <input
+              type="text"
+              value={editedData.venue || ""}
+              onChange={(e) =>
+                setEditedData({ ...editedData, venue: e.target.value })
+              }
+            />
           </div>
+
           <div className="form-group">
             <label>Max Participants</label>
-            <input type="number" min="2" max="128" value={editedData.maxParticipants || 16} onChange={(e) => setEditedData({ ...editedData, maxParticipants: parseInt(e.target.value) })} />
+            <input
+              type="number"
+              min="2"
+              max="128"
+              value={editedData.maxParticipants || 16}
+              onChange={(e) =>
+                setEditedData({
+                  ...editedData,
+                  maxParticipants: parseInt(e.target.value),
+                })
+              }
+            />
           </div>
+
           <div className="form-group">
             <label>Status</label>
-            <select value={editedData.status || 'Upcoming'} onChange={(e) => setEditedData({ ...editedData, status: e.target.value })}>
-              <option value="Upcoming">Upcoming</option>
-              <option value="Ongoing">Ongoing</option>
-              <option value="Completed">Completed</option>
-            </select>
+            <select
+  value={editedData.status || "Registration Open"}
+  onChange={(e) => setEditedData({ ...editedData, status: e.target.value })}
+>
+  <option value="Registration Open">Registration Open</option>
+  <option value="Coming Soon">Coming Soon</option>
+  <option value="Completed">Completed</option>
+</select>
+
+          </div>
+
+          <div className="form-group">
+            <label>Coordinator</label>
+            <input
+              type="text"
+              value={editedData.coordinator || ""}
+              onChange={(e) =>
+                setEditedData({ ...editedData, coordinator: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Contact Number</label>
+            <input
+              type="text"
+              value={editedData.contact || ""}
+              onChange={(e) =>
+                setEditedData({ ...editedData, contact: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Prizes</label>
+            <textarea
+              rows="2"
+              value={editedData.prizes || ""}
+              onChange={(e) =>
+                setEditedData({ ...editedData, prizes: e.target.value })
+              }
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Description</label>
+            <textarea
+              rows="3"
+              value={editedData.description || ""}
+              onChange={(e) =>
+                setEditedData({ ...editedData, description: e.target.value })
+              }
+            />
           </div>
         </div>
+
         <div className="modal-footer">
-          <button className="cancel-btn" onClick={() => setEditingTournament(null)}>Cancel</button>
+          <button className="cancel-btn" onClick={() => setEditingTournament(null)}>
+            Cancel
+          </button>
           <button className="save-btn" onClick={handleSaveTournamentEdit}>
             <Save size={14} /> Save Changes
           </button>
@@ -1111,122 +1276,187 @@ const addNewPlayerField = () => {
 
       {/* Tournament Creation Modal */}
       <AnimatePresence>
-        {showCreateModal && (
-          <motion.div 
-            className="modal-backdrop"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <motion.div 
-              className="create-modal"
-              initial={{ scale: 0.9, opacity: 0 }}
-              animate={{ scale: 1, opacity: 1 }}
-              exit={{ scale: 0.9, opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              onClick={(e) => e.stopPropagation()}
+  {showCreateModal && (
+    <motion.div
+      className="modal-backdrop"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="create-modal"
+        initial={{ scale: 0.9, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0.9, opacity: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="modal-header">
+          <h2>Create New Tournament</h2>
+          <button className="close-btn" onClick={() => setShowCreateModal(false)}>
+            <X size={20} />
+          </button>
+        </div>
+
+        <div className="modal-body">
+          <div className="form-group">
+            <label>Tournament Name</label>
+            <input
+              type="text"
+              value={newTournament.tournamentName}
+              onChange={(e) =>
+                setNewTournament({ ...newTournament, tournamentName: e.target.value })
+              }
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Category</label>
+            <select
+              value={newTournament.category}
+              onChange={(e) =>
+                setNewTournament({ ...newTournament, category: e.target.value })
+              }
             >
-              <div className="modal-header">
-                <h2>Create New Tournament</h2>
-                <button className="close-btn" onClick={() => setShowCreateModal(false)}>
-                  <X size={20} />
-                </button>
-              </div>
-              <div className="modal-body">
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="tournamentName">Tournament Name</label>
-                    <input 
-                      type="text" 
-                      id="tournamentName" 
-                      value={newTournament.tournamentName}
-                      onChange={(e) => setNewTournament({...newTournament, tournamentName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="category">Category</label>
-                    <select 
-                      id="category"
-                      value={newTournament.category}
-                      onChange={(e) => setNewTournament({...newTournament, category: e.target.value})}
-                    >
-                      <option value="Under 13">Under 13</option>
-                      <option value="Under 15">Under 15</option>
-                      <option value="Under 17">Under 17</option>
-                      <option value="Under 19">Under 19</option>
-                      <option value="Open">Open</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="date">Date</label>
-                    <input 
-                      type="date" 
-                      id="date" 
-                      value={newTournament.date}
-                      onChange={(e) => setNewTournament({...newTournament, date: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="venue">Venue</label>
-                    <input 
-                      type="text" 
-                      id="venue" 
-                      value={newTournament.venue}
-                      onChange={(e) => setNewTournament({...newTournament, venue: e.target.value})}
-                      required
-                    />
-                  </div>
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="maxParticipants">Maximum Participants</label>
-                    <input 
-                      type="number" 
-                      id="maxParticipants" 
-                      value={newTournament.maxParticipants}
-                      onChange={(e) => setNewTournament({...newTournament, maxParticipants: parseInt(e.target.value)})}
-                      min="2"
-                      max="128"
-                    />
-                  </div>
-                  <div className="form-group">
-                    <label htmlFor="paymentMethod">Registration Payment Method</label>
-                    <select 
-                      id="paymentMethod"
-                      value={newTournament.paymentMethod}
-                      onChange={(e) => setNewTournament({...newTournament, paymentMethod: e.target.value})}
-                    >
-                      <option value="Credit Card">Credit Card</option>
-                      <option value="Bank Transfer">Bank Transfer</option>
-                      <option value="PayPal">PayPal</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-              <div className="modal-footer">
-                <button 
-                  className="cancel-btn" 
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  Cancel
-                </button>
-                <button 
-                  className="save-btn" 
-                  onClick={handleCreateTournament}
-                >
-                  <Save size={14} /> Create Tournament
-                </button>
-              </div>
-            </motion.div>
-          </motion.div>
-        )}
-      </AnimatePresence>
+              <option value="Under 13">Under 13</option>
+              <option value="Under 15">Under 15</option>
+              <option value="Under 17">Under 17</option>
+              <option value="Under 19">Under 19</option>
+              <option value="Open">Open</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Date</label>
+            <input
+              type="date"
+              value={newTournament.date}
+              onChange={(e) => setNewTournament({ ...newTournament, date: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Registration Deadline</label>
+            <input
+              type="date"
+              value={newTournament.registrationDeadline}
+              onChange={(e) =>
+                setNewTournament({ ...newTournament, registrationDeadline: e.target.value })
+              }
+              required
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Venue</label>
+            <input
+              type="text"
+              value={newTournament.venue}
+              onChange={(e) => setNewTournament({ ...newTournament, venue: e.target.value })}
+              required
+            />
+          </div>
+
+          <div className="form-group">
+  <label>Maximum Participants</label>
+  <input
+    type="number"
+    min="2"
+    max="128"
+    value={
+      newTournament.maxParticipants === 0 || newTournament.maxParticipants
+        ? newTournament.maxParticipants
+        : ""
+    }
+    onChange={(e) => {
+      const value = e.target.value;
+      setNewTournament({
+        ...newTournament,
+        maxParticipants: value === "" ? "" : parseInt(value),
+      });
+    }}
+  />
+</div>
+
+
+          <div className="form-group">
+            <label>Status</label>
+            <select
+              value={newTournament.status}
+              onChange={(e) => setNewTournament({ ...newTournament, status: e.target.value })}
+            >
+              <option value="Registration Open">Registration Open</option>
+              <option value="Coming Soon">Coming Soon</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Registration Payment Method</label>
+            <select
+              value={newTournament.paymentMethod}
+              onChange={(e) =>
+                setNewTournament({ ...newTournament, paymentMethod: e.target.value })
+              }
+            >
+              <option value="Credit Card">Credit Card</option>
+              <option value="Bank Transfer">Bank Transfer</option>
+              <option value="PayPal">PayPal</option>
+            </select>
+          </div>
+
+          <div className="form-group">
+            <label>Coordinator</label>
+            <input
+              type="text"
+              value={newTournament.coordinator}
+              onChange={(e) => setNewTournament({ ...newTournament, coordinator: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Contact Number</label>
+            <input
+              type="text"
+              value={newTournament.contact}
+              onChange={(e) => setNewTournament({ ...newTournament, contact: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Prizes</label>
+            <textarea
+              rows="2"
+              value={newTournament.prizes}
+              onChange={(e) => setNewTournament({ ...newTournament, prizes: e.target.value })}
+            />
+          </div>
+
+          <div className="form-group">
+            <label>Description</label>
+            <textarea
+              rows="3"
+              value={newTournament.description}
+              onChange={(e) => setNewTournament({ ...newTournament, description: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="modal-footer">
+          <button className="cancel-btn" onClick={() => setShowCreateModal(false)}>
+            Cancel
+          </button>
+          <button className="save-btn" onClick={handleCreateTournament}>
+            <Save size={14} /> Create Tournament
+          </button>
+        </div>
+      </motion.div>
+    </motion.div>
+  )}
+</AnimatePresence>
+
 
       {/* Initial Loading Overlay */}
       <AnimatePresence>
