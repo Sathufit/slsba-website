@@ -340,7 +340,12 @@ const handleSaveTournamentEdit = async () => {
   
   // Create new tournament
   const handleCreateTournament = async () => {
-    if (!newTournament.tournamentName || !newTournament.date || !newTournament.venue) {
+    if (
+      !newTournament.tournamentName || 
+      !newTournament.date || 
+      !newTournament.venue || 
+      !newTournament.registrationDeadline
+    ) {
       alert("Please fill in all required fields.");
       return;
     }
@@ -351,7 +356,7 @@ const handleSaveTournamentEdit = async () => {
       if (response.status === 201 || response.status === 200) {
         showToast("Tournament created successfully!");
         setShowCreateModal(false);
-        const [newTournament, setNewTournament] = useState({
+        setNewTournament({
           tournamentName: "",
           category: "Under 17",
           date: "",
@@ -364,8 +369,7 @@ const handleSaveTournamentEdit = async () => {
           prizes: "",
           description: "",
           paymentMethod: "Bank Transfer",
-        });        
-          
+        });
         fetchTournamentList();
       } else {
         console.error("Unexpected response:", response);
@@ -375,16 +379,6 @@ const handleSaveTournamentEdit = async () => {
       console.error("Error creating tournament:", error.response?.data || error.message);
       alert("Error creating tournament");
     }
-    if (
-      !newTournament.tournamentName || 
-      !newTournament.date || 
-      !newTournament.venue || 
-      !newTournament.registrationDeadline
-    ) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-    
   };
   
 

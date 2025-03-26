@@ -6,7 +6,7 @@ import "../styles/TournamentReg.css";
 import axios from "axios";
 import { Elements } from "@stripe/react-stripe-js";
 import { loadStripe } from "@stripe/stripe-js";
-import CheckoutForm from "../components/CheckoutForm"; // ✅ Corrected path
+import CheckoutForm from "../components/CheckoutForm"; 
 
 const stripePromise = loadStripe("pk_test_51R4FPYGfn39KTTSncHeJ7cLe5Is4MOgn6NSvwq7jFN032wcB8w0nHgkyG7dOPk8HHl0aWk2Bpow27mOIFY2h5Fth00khlQqnSo");
 
@@ -16,7 +16,7 @@ const TournamentRegistration = () => {
 
   const [formData, setFormData] = useState({
     fullName: "",
-    email: "", // ✅ Add this
+    email: "", 
     schoolName: "",
     schoolID: "",
     tournament: "",
@@ -80,7 +80,7 @@ const TournamentRegistration = () => {
 
     const submissionData = new FormData();
     submissionData.append("fullName", formData.fullName);
-    submissionData.append("email", formData.email); // ✅ Add this line
+    submissionData.append("email", formData.email); 
     submissionData.append("schoolName", formData.schoolName);
     submissionData.append("schoolID", formData.schoolID);
     submissionData.append("tournament", formData.tournament);

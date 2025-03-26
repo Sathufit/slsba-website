@@ -7,7 +7,7 @@ import SignUpPage from "./pages/SignUpPage";
 import AboutUs from "./pages/AboutUs";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminLogin from "./pages/AdminLogin";
-import AdminTournament from "./pages/AdminTournament"; // ✅ Import Admin Tournament Page
+import AdminTournament from "./pages/AdminTournament"; 
 import ProtectedRoute from "./ProtectedRoute";
 import PaymentPage from "./pages/PaymentPage";
 import SuccessPage from "./pages/SuccessPage";
@@ -19,7 +19,7 @@ const App = () => {
 
   useEffect(() => {
     const token = localStorage.getItem("adminToken");
-    setIsAdminLoggedIn(!!token); // ✅ Convert token existence to Boolean
+    setIsAdminLoggedIn(!!token); 
   }, []);
 
   return (
