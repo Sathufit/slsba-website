@@ -4,28 +4,25 @@ const TournamentRegistration = require("../models/TournamentRegistration");
 
 const router = express.Router();
 
-// 🎯 **Generate Tournament Brackets**
-const generateBracket = (players) => {
-  const shuffledPlayers = players.sort(() => Math.random() - 0.5); // Randomize order
-  let matchups = [];
 
-  for (let i = 0; i < shuffledPlayers.length; i += 2) {
-    matchups.push({
-      player1: shuffledPlayers[i]?.name || "BYE",
-      player2: shuffledPlayers[i + 1]?.name || "BYE",
-      winner: "",
-    });
-  }
-
-  return [{ round: 1, matchups }];
-};
-
-// 🎯 **Create a Tournament**
 router.post("/create", async (req, res) => {
   try {
-    const { tournamentName, category, date, venue, maxParticipants } = req.body;
+    const {
+      tournamentName,
+      category,
+      date,
+      registrationDeadline,
+      venue,
+      maxParticipants,
+      status,
+      coordinator,
+      contact,
+      prizes,
+      description,
+    } = req.body;
 
-    if (!tournamentName || !date || !venue || !maxParticipants) {
+    // ✅ Check required fields
+    if (!tournamentName || !date || !registrationDeadline || !venue || !maxParticipants) {
       return res.status(400).json({ error: "❌ Missing required fields" });
     }
 
@@ -33,18 +30,24 @@ router.post("/create", async (req, res) => {
       tournamentName,
       category,
       date,
+      registrationDeadline,
       venue,
       maxParticipants,
-      status: "Upcoming",
-      players: [],
+      status: status || "Registration Open", // default fallback
+      coordinator,
+      contact,
+      prizes,
+      description,
     });
 
     await newTournament.save();
     res.status(201).json({ message: "✅ Tournament Created", data: newTournament });
   } catch (err) {
+    console.error("❌ Tournament Creation Error:", err);
     res.status(500).json({ error: "❌ Error creating tournament", details: err.message });
   }
 });
+
 
 // 🎯 **Fetch All Tournaments**
 router.get("/all", async (req, res) => {

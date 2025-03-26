@@ -95,25 +95,50 @@ router.post("/register", upload.single("paymentFile"), async (req, res) => {
     res.status(201).json({ message: "✅ Registration successful!", data: newRegistration });
 
     // ✅ Try sending email (non-blocking)
-    try {
-      await transporter.sendMail({
-        from: `"SLSBA" <${process.env.EMAIL_USER}>`,
-        to: email,
-        subject: "✅ SLSBA Tournament Registration Confirmation",
-        html: `
-          <h2>Hi ${fullName},</h2>
-          <p>You have successfully registered for the SLSBA tournament.</p>
-          <p><strong>School:</strong> ${schoolName}</p>
-          <p><strong>Tournament ID:</strong> ${tournament}</p>
-          <br />
-          <p>Thank you for registering!</p>
-          <p>- Sri Lanka Schools Badminton Association (SLSBA)</p>
-        `,
-      });
-      console.log("✅ Confirmation email sent to:", email);
-    } catch (emailErr) {
-      console.error("⚠️ Failed to send confirmation email:", emailErr.message);
-    }
+try {
+  await transporter.sendMail({
+    from: `"SLSBA" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "🏸 SLSBA Tournament Registration Confirmation",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: auto; padding: 20px; border: 1px solid #eaeaea; border-radius: 10px; background-color: #f9f9f9;">
+        <h2 style="color: #4F46E5;">Hello ${fullName},</h2>
+
+        <p style="font-size: 16px; color: #333;">
+          🎉 We're excited to confirm your registration for the upcoming <strong>SLSBA Tournament</strong>!
+        </p>
+
+        <table style="width: 100%; margin-top: 20px; font-size: 15px; color: #333;">
+          <tr>
+            <td style="padding: 8px 0;"><strong>🏫 School:</strong></td>
+            <td>${schoolName}</td>
+          </tr>
+          <tr>
+            <td style="padding: 8px 0;"><strong>🆔 Tournament ID:</strong></td>
+            <td>${tournament}</td>
+          </tr>
+        </table>
+
+        <p style="margin-top: 20px; font-size: 16px;">
+          We'll keep you updated with all tournament-related information as the event approaches.
+        </p>
+
+        <p style="margin-top: 30px; font-size: 16px;">Thank you for your participation and best of luck! 🏸</p>
+
+        <p style="margin-top: 40px; font-size: 14px; color: #555;">
+          Warm regards,<br />
+          <strong>Sri Lanka Schools Badminton Association (SLSBA)</strong><br />
+          📧 <a href="mailto:slsba.official@gmail.com" style="color: #4F46E5;">slsba.official@gmail.com</a>
+        </p>
+      </div>
+    `,
+  });
+
+  console.log("✅ Confirmation email sent to:", email);
+} catch (emailErr) {
+  console.error("⚠️ Failed to send confirmation email:", emailErr.message);
+}
+
 
   } catch (error) {
     console.error("❌ Error during registration:", error);
