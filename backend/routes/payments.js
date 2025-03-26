@@ -16,7 +16,7 @@ router.post("/create-checkout-session", async (req, res) => {
               name: "Tournament Registration",
               description: "Entry fee for tournament",
             },
-            unit_amount: amount, // Amount in cents (e.g. 5000 for $50.00)
+            unit_amount: amount, 
           },
           quantity: 1,
         },

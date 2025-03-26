@@ -33,7 +33,7 @@ router.post("/create", async (req, res) => {
       registrationDeadline,
       venue,
       maxParticipants,
-      status: status || "Registration Open", // default fallback
+      status: status || "Registration Open", 
       coordinator,
       contact,
       prizes,
@@ -144,9 +144,9 @@ router.put("/approve-payment/:id", async (req, res) => {
 router.put("/update/:id", async (req, res) => {
   try {
     const updatedTournament = await Tournament.findByIdAndUpdate(
-      req.params.id, // Find tournament by ID
-      req.body, // Update with new data
-      { new: true, runValidators: true } // Return updated doc & validate
+      req.params.id, 
+      req.body, 
+      { new: true, runValidators: true } 
     );
 
     if (!updatedTournament) {

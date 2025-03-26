@@ -28,8 +28,8 @@ const upload = multer({ storage });
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: process.env.EMAIL_USER,     // Your Gmail address
-    pass: process.env.EMAIL_PASS,     // Your Gmail App Password
+    user: process.env.EMAIL_USER,     
+    pass: process.env.EMAIL_PASS,    
   },
 });
 
@@ -94,7 +94,7 @@ router.post("/register", upload.single("paymentFile"), async (req, res) => {
     // ✅ Respond to frontend immediately
     res.status(201).json({ message: "✅ Registration successful!", data: newRegistration });
 
-    // ✅ Try sending email (non-blocking)
+    
 try {
   await transporter.sendMail({
     from: `"SLSBA" <${process.env.EMAIL_USER}>`,
@@ -146,7 +146,7 @@ try {
   }
 });
 
-// backend/routes/tournamentRoutes.js or wherever this is handled
+
 router.get("/all", async (req, res) => {
   try {
     console.log("📌 Fetching all registrations...");

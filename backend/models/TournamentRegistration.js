@@ -9,7 +9,7 @@ const TournamentRegistrationSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId, 
     ref: "Tournament", 
     required: true 
-  }, // ✅ Link to Tournament
+  }, 
   players: [
     {
       name: { type: String, required: true },
@@ -27,9 +27,9 @@ const TournamentRegistrationSchema = new mongoose.Schema({
     type: String, 
     enum: ["Pending", "Paid", "Failed"], 
     default: "Pending" 
-  }, // ✅ Track payments
+  }, 
   createdAt: { type: Date, default: Date.now },
 });
 
-// ✅ Prevent Overwriting the Model
+
 module.exports = mongoose.models.TournamentRegistration || mongoose.model("TournamentRegistration", TournamentRegistrationSchema);
