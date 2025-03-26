@@ -46,7 +46,9 @@ const TournamentSchema = new mongoose.Schema({
   contact: {
     type: String,
     trim: true,
-  },
+    required: true,
+    match: [/^\d{10}$/, "Contact number must be exactly 10 digits"]
+  },  
   prizes: {
     type: String,
     trim: true,
